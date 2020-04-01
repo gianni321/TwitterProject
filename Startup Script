@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Start up the dynamic update client
+
+	sudo /usr/local/bin/noip2
+
+	sleep(2);
+	
+# Pipe the hostname -I (ipaddress) to noip2 -i (sets ipaddress)
+
+	sudo /usr/local/bin/noip2 -i `hostname -I`
+	
+# We may need to call gpsmon and ctrl+c to Start GPS daemon
+# pipe GPS daemon to our program
+
+	gpspipe -rpn 10 -o "Coordinates.txt"                 
+
