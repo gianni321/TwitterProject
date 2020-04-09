@@ -135,12 +135,13 @@ int main( int argc, char *argv[] ) {
 	    // Zeroes the buffer to hold the messages.
 	    bzero( buffer, BUFFER_SIZE );
 	    
-	    /*
-	        This reads from the socket, if there is nothing there, it will
-	        block until there is data to be read. It returns the length of 
-	        the message read from the socket file.
-	    */
+        // This inner loop keeps the reading/writing going until we receive exit.
 	    while( true ) {
+            /*
+                This reads from the socket, if there is nothing there, it will
+                block until there is data to be read. It returns the length of 
+                the message read from the socket file.
+            */
 		    SizeOfMessage = read( ConnectionFileDescriptor , buffer, BUFFER_SIZE-1 );
 
 		    while( SizeOfMessage < 2 ) {
