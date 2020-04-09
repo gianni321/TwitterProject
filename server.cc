@@ -8,62 +8,163 @@
 #include <unistd.h>
 #include <strings.h>
 
-void error(char *msg) {
-    perror(msg);
-    exit(1);
+#include <string>
+#include <iostream>
+#include <iomanip>
+
+#define BUFFER_SIZE 256
+
+using namespace std;
+
+void ThrowError( string Message ) {
+    cerr << Message << '\n';
+    exit( 1 );
 }
 
-int main(int argc, char *argv[]) {
-     int sockfd, newsockfd, portno, clilen;
-     char buffer[256];
-     struct sockaddr_in serv_addr, cli_addr;
-     int n;
+int main( int argc, char *argv[] ) {
 
-     if (argc < 2) {
-         fprintf(stderr,"ERROR, no port provided\n");
-         exit(1);
-     }
+    // This buffer is used to hold the message.
+    char buffer[ BUFFER_SIZE ];
+    // This contains the internet address of the client.
+    struct sockaddr_in ServerAddress, ClientAddress;
+    // Number of characters read from buffer.
+    int SizeOfMessage;
 
-     sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    // ThrowError Checking
+    if ( argc < 2 ) 
+        ThrowError( "ThrowError: No Port Provided" );
+
+    /*
+        Creates a socket on this computer. We save the File Descriptor
+        to reference this later.
+
+        The First Argument: 
+            The address domain of the socket. Recall that 
+            there are two possible address domains, the unix domain for two 
+            processes which share a common file system, and the Internet domain 
+            for any two hosts on the Internet.
+
+            AF_UNIX for the Unix Domain.
+            AF_INET for the Internet.
+
+        We are using the internet here, obviously, so we use AF_INET.
+
+        The Second Argument:
+            The type of socket. There are two choices here. Using SOCK_STREAM
+            which will read in a continuous stream as if from a file or pipe.
+            Then there is a datagram socket SOCK_DGRAM in which messages are read
+            in chunks.
+
+        We are using SOCK_STREAM here to read in a continuous stream.
+
+        The Third Argument:
+            The protocol. If this protocol is 0 then the operating system will
+            choose the most appropriate protocol. It will choose TCP for stream
+            sockets and UDP for datagram sockets.
+
+        We are using 0 here to get TCP, however, if we switch to datagram.
+        We can keep this as is and trust the OS. 
+    */
+    int SocketFileDescriptor = socket( AF_INET, SOCK_STREAM, 0 );
+    
+    // Checks if the file descriptor is 0. Indicating an ThrowError.
+    if ( SocketFileDescriptor < 0 )  
+        ThrowError( "ThrowError opening socket" );
+    
+    /*
+        This function zeroes all values in the ServerAddress.
+            The first argument is a pointer to the buffer.
+            The second argument is the size fo the buffer.
+        The buffer being our Server Address Struct [ClientAddress].
+    */
+    bzero( (char *) &ServerAddress, sizeof( ServerAddress ) );
      
-     if (sockfd < 0) 
-        error("ERROR opening socket");
+    // This identifies our Server Address to be an Internet Address.
+    ServerAddress.sin_family = AF_INET;
+    // This sets the address to be the IP Address of the host. (The Pi).
+    ServerAddress.sin_addr.s_addr = INADDR_ANY;
+
+    // This is the Port Number passed to the program
+    // ***** This will change to use a rotating number of ports *****
+    int PortNumber = atoi( argv[1] );
      
-     bzero((char *) &serv_addr, sizeof(serv_addr));
+    /* 
+        Here we assign the serv_addr with the port number passed to the program
+            htons() is used to change the port number from "host bye order"
+            AKA normal decimal numbers. It changes it to "network byte order".
+    */ 
+    ServerAddress.sin_port = htons( PortNumber );
+
+    /*
+        This will bind the current host and port number to the socket we
+        created earlier.
+
+        First Argument:
+            The SocketFileDescriptor that we created earlier.
+        Second Argument:
+            The pointer to the ServerAddress struct. This can fail if the
+            current socket (port) is already in use.
+        Third Argument:
+            The size of the Server Address.  
+    */
+    if ( bind( SocketFileDescriptor, ( struct sockaddr * ) &ServerAddress, sizeof( ServerAddress )) < 0 ) 
+              ThrowError("ThrowError on binding");
+    
+    /*
+        This allows the process to listen on the current socket for connections.
+        The first argument is the file descriptor, the second is the size of the 
+        backlog queue.
+            ( i.e. the number of connections that can be waiting while the process is handling 
+            the particular connection. This should be set to 5, the maximum size permitted by most systems.)
+    */
+    listen( SocketFileDescriptor, 5 );
+
+    // Saves the size of the Client Address.
+    socklen_t ClientAddressLength = sizeof( ClientAddress );
      
-     // This is the Port number passed to the program
-     PortNumber = atoi(argv[1]);
+    /*
+        This is the new file descriptor for the connection between the two
+        computers. This will be used for all communication from this point on.
+
+        First Argument:
+            Our Socket File Descriptor.
+        Second Argument:
+            Client Address
+        Third Argument:
+            Lenght of the Client Address
+    */
+    int ConnectionFileDescriptor = accept( SocketFileDescriptor, (struct sockaddr *) &ClientAddress , &ClientAddressLength );
+    
+    // Checks if the new file descriptor 
+    if ( ConnectionFileDescriptor < 0 ) 
+        ThrowError( "ThrowError on accept" );
+    
+    // Zeroes the buffer to hold the messages.
+    bzero( buffer, BUFFER_SIZE );
+    
+    /*
+        This reads from the socket, if there is nothing there, it will
+        block until there is data to be read. It returns the length of 
+        the message read from the socket file.
+    */
+    SizeOfMessage = read( ConnectionFileDescriptor , buffer, BUFFER_SIZE-1 );
+    
+    // Obviously something went wrong if this happens.
+    if ( SizeOfMessage < 0 ) 
+        ThrowError( "ThrowError reading from socket" );
+
+    // Here we are printing the message.
+    printf( "Here is the message: %s\n", buffer );
+    
+    /*
+        This returns a message to the socket file to be picked up by the client
+        confirming the message was read.
+    */
+    string message = "I got your message.";
+    SizeOfMessage = write( ConnectionFileDescriptor, message.c_str(), message.size() );
      
-     serv_addr.sin_family = AF_INET;
-     serv_addr.sin_addr.s_addr = INADDR_ANY;
-     // Here we assign the serv_addr with the port number passed to the program
-     // and use htons to...
-     serv_addr.sin_port = htons( PortNumber );
+    // Obviously something went wrong here.
+    if ( SizeOfMessage < 0 ) 
+        ThrowError( "ThrowError writing to socket" );
      
-     if (bind(sockfd, (struct sockaddr *) &serv_addr,
-              sizeof(serv_addr)) < 0) 
-              error("ERROR on binding");
-     
-     listen(sockfd,5);
-     
-     clilen = sizeof(cli_addr);
-     
-     newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-     
-     if (newsockfd < 0) 
-          error("ERROR on accept");
-     
-     bzero(buffer,256);
-     
-     n = read(newsockfd,buffer,255);
-     
-     if (n < 0) error("ERROR reading from socket");
-     
-     printf("Here is the message: %s\n",buffer);
-     
-     n = write(newsockfd,"I got your message",18);
-     
-     if (n < 0) error("ERROR writing to socket");
-     
-     return 0; 
 }
