@@ -3,9 +3,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h> 
-#include <stdlib.h>
+#include <cstdlib>
 #include <unistd.h>
 #include <strings.h>
+#include <signal.h>
 
 #include <string>
 #include <iostream>
@@ -15,10 +16,12 @@
 
 using namespace std;
 
-void ThrowError( string message )
-{
+void ThrowError( string message ) {
     cerr << message << '\n';
     exit( 0 );
+}
+void SignalHandler( int signum ) {
+    cout << "\nEnter: \"exit\" to exit the program\n";
 }
 
 int main( int argc, char *argv[] ) {
@@ -132,31 +135,36 @@ int main( int argc, char *argv[] ) {
     if ( connect( SocketFileDescriptor, (struct sockaddr *) &ServerAddress, sizeof( ServerAddress ) ) < 0 ) 
         ThrowError( "ERROR connecting" );
 
-    // Creates a Message string to be sent after prompt to User.
-    string Message;
-    cout << "Please enter your message: ";
+    while ( true ) {
+        signal( SIGINT, SignalHandler );
+        // Creates a Message string to be sent after prompt to User.
+        string Message;
+        cout << "Please enter your message: ";
 
-    // setw here limits how many chars to take in from the User.
-    cin >> setw( BUFFER_SIZE-1 ) >> Message;
+        // setw here limits how many chars to take in from the User.
+        getline( cin >> setw(BUFFER_SIZE-1), Message );
 
-    // Here we write our message to our socket.    
-    int SizeOfMessage = write( SocketFileDescriptor, Message.c_str(), Message.size() );
+        // Here we write our message to our socket.    
+        int SizeOfMessage = write( SocketFileDescriptor, Message.c_str(), Message.size() );
 
-    // Error Checking
-    if ( SizeOfMessage < 0 ) 
-         ThrowError( "Error: Could Not Write To Socket" );
+        if( Message == "exit" )
+            break;
 
-    // This zeroes out the buffer to read a new message.
-    bzero( buffer, BUFFER_SIZE );
+        // Error Checking
+        if ( SizeOfMessage < 0 ) 
+            ThrowError( "Error: Could Not Write To Socket" );
 
-    // This reads from the socket after the server has sent us a message.
-    SizeOfMessage = read( SocketFileDescriptor, buffer, BUFFER_SIZE-1 );
+        // This zeroes out the buffer to read a new message.
+        bzero( buffer, BUFFER_SIZE );
 
-    // Error Checking
-    if ( SizeOfMessage < 0 ) 
-         ThrowError( "ERROR reading from socket" );
+        // This reads from the socket after the server has sent us a message.
+        SizeOfMessage = read( SocketFileDescriptor, buffer, BUFFER_SIZE-1 );
 
-    // Here we print the message from the server.
-    cout << buffer << '\n';
+        // Error Checking
+        if ( SizeOfMessage < 0 ) 
+            ThrowError( "ERROR reading from socket" );
 
+        // Here we print the message from the server.
+        cout << buffer << '\n';
+    }
 }
