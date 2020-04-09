@@ -37,31 +37,24 @@ int main( int argc, char *argv[] ) {
     /*
         Creates a socket on this computer. We save the File Descriptor
         to reference this later.
-
         The First Argument: 
             The address domain of the socket. Recall that 
             there are two possible address domains, the unix domain for two 
             processes which share a common file system, and the Internet domain 
             for any two hosts on the Internet.
-
             AF_UNIX for the Unix Domain.
             AF_INET for the Internet.
-
         We are using the internet here, obviously, so we use AF_INET.
-
         The Second Argument:
             The type of socket. There are two choices here. Using SOCK_STREAM
             which will read in a continuous stream as if from a file or pipe.
             Then there is a datagram socket SOCK_DGRAM in which messages are read
             in chunks.
-
         We are using SOCK_STREAM here to read in a continuous stream.
-
         The Third Argument:
             The protocol. If this protocol is 0 then the operating system will
             choose the most appropriate protocol. It will choose TCP for stream
             sockets and UDP for datagram sockets.
-
         We are using 0 here to get TCP, however, if we switch to datagram.
         We can keep this as is and trust the OS. 
     */
@@ -98,7 +91,6 @@ int main( int argc, char *argv[] ) {
     /*
         This will bind the current host and port number to the socket we
         created earlier.
-
         First Argument:
             The SocketFileDescriptor that we created earlier.
         Second Argument:
@@ -125,7 +117,6 @@ int main( int argc, char *argv[] ) {
     /*
         This is the new file descriptor for the connection between the two
         computers. This will be used for all communication from this point on.
-
         First Argument:
             Our Socket File Descriptor.
         Second Argument:
@@ -133,38 +124,52 @@ int main( int argc, char *argv[] ) {
         Third Argument:
             Lenght of the Client Address
     */
-    int ConnectionFileDescriptor = accept( SocketFileDescriptor, (struct sockaddr *) &ClientAddress , &ClientAddressLength );
-    
-    // Checks if the new file descriptor 
-    if ( ConnectionFileDescriptor < 0 ) 
-        ThrowError( "ThrowError on accept" );
-    
-    // Zeroes the buffer to hold the messages.
-    bzero( buffer, BUFFER_SIZE );
-    
-    /*
-        This reads from the socket, if there is nothing there, it will
-        block until there is data to be read. It returns the length of 
-        the message read from the socket file.
-    */
-    SizeOfMessage = read( ConnectionFileDescriptor , buffer, BUFFER_SIZE-1 );
-    
-    // Obviously something went wrong if this happens.
-    if ( SizeOfMessage < 0 ) 
-        ThrowError( "ThrowError reading from socket" );
+    // this loop ensures that we will listen for more connections following the end of a client message
+    while( true ) {
+	    int ConnectionFileDescriptor = accept( SocketFileDescriptor, (struct sockaddr *) &ClientAddress , &ClientAddressLength );
+	    
+	    // Checks if the new file descriptor 
+	    if ( ConnectionFileDescriptor < 0 ) 
+	        ThrowError( "ThrowError on accept" );
+	    
+	    // Zeroes the buffer to hold the messages.
+	    bzero( buffer, BUFFER_SIZE );
+	    
+	    /*
+	        This reads from the socket, if there is nothing there, it will
+	        block until there is data to be read. It returns the length of 
+	        the message read from the socket file.
+	    */
+	    while( true ) {
+		    SizeOfMessage = read( ConnectionFileDescriptor , buffer, BUFFER_SIZE-1 );
 
-    // Here we are printing the message.
-    printf( "Here is the message: %s\n", buffer );
-    
-    /*
-        This returns a message to the socket file to be picked up by the client
-        confirming the message was read.
-    */
-    string message = "I got your message.";
-    SizeOfMessage = write( ConnectionFileDescriptor, message.c_str(), message.size() );
-     
-    // Obviously something went wrong here.
-    if ( SizeOfMessage < 0 ) 
-        ThrowError( "ThrowError writing to socket" );
-     
+		    while( SizeOfMessage < 2 ) {
+		    	read( ConnectionFileDescriptor, buffer, BUFFER_SIZE-1 );
+		    }
+		     
+		    string test = buffer;
+		    if( test == "exit" ) {
+		    	break;
+		    }
+		    // Obviously something went wrong if this happens.
+		    if ( SizeOfMessage < 0 ) 
+		        ThrowError( "ThrowError reading from socket" );
+
+		    // Here we are printing the message.
+		    cout << "Here is the message: " << buffer << '\n';
+		    
+		    /*
+		        This returns a message to the socket file to be picked up by the client
+		        confirming the message was read.
+		    */
+		    string message = "I got your message.";
+		    SizeOfMessage = write( ConnectionFileDescriptor, message.c_str(), message.size() );
+		     
+		    // Obviously something went wrong here.
+		    if ( SizeOfMessage < 0 ) 
+		        ThrowError( "ThrowError writing to socket" );
+
+		    bzero( buffer, BUFFER_SIZE );
+	    }
+    }
 }
