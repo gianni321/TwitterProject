@@ -13,6 +13,7 @@
 #include <iomanip>
 
 #define BUFFER_SIZE 256
+#define PORTNUMBER "34546"
 
 using namespace std;
 
@@ -29,10 +30,6 @@ int main( int argc, char *argv[] ) {
     struct sockaddr_in ServerAddress, ClientAddress;
     // Number of characters read from buffer.
     int SizeOfMessage;
-
-    // ThrowError Checking
-    if ( argc < 2 ) 
-        ThrowError( "ThrowError: No Port Provided" );
 
     /*
         Creates a socket on this computer. We save the File Descriptor
@@ -79,14 +76,14 @@ int main( int argc, char *argv[] ) {
 
     // This is the Port Number passed to the program
     // ***** This will change to use a rotating number of ports *****
-    int PortNumber = atoi( argv[1] );
-     
+    int PortNumber = atoi( PORTNUMBER );
+    do { 
     /* 
         Here we assign the serv_addr with the port number passed to the program
             htons() is used to change the port number from "host bye order"
             AKA normal decimal numbers. It changes it to "network byte order".
     */ 
-    ServerAddress.sin_port = htons( PortNumber );
+        ServerAddress.sin_port = htons( PortNumber );
 
     /*
         This will bind the current host and port number to the socket we
@@ -99,8 +96,10 @@ int main( int argc, char *argv[] ) {
         Third Argument:
             The size of the Server Address.  
     */
-    if ( bind( SocketFileDescriptor, ( struct sockaddr * ) &ServerAddress, sizeof( ServerAddress )) < 0 ) 
-              ThrowError("ThrowError on binding");
+        // Check the Next Port...
+        ++PortNumber;
+    } while ( (PortNumber < atoi(PORTNUMBER) + 10) && bind( SocketFileDescriptor, ( struct sockaddr * ) &ServerAddress, sizeof( ServerAddress )) < 0 );
+              
     
     /*
         This allows the process to listen on the current socket for connections.
@@ -135,13 +134,12 @@ int main( int argc, char *argv[] ) {
 	    // Zeroes the buffer to hold the messages.
 	    bzero( buffer, BUFFER_SIZE );
 	    
-        // This inner loop keeps the reading/writing going until we receive exit.
+	    /*
+	        This reads from the socket, if there is nothing there, it will
+	        block until there is data to be read. It returns the length of 
+	        the message read from the socket file.
+	    */
 	    while( true ) {
-            /*
-                This reads from the socket, if there is nothing there, it will
-                block until there is data to be read. It returns the length of 
-                the message read from the socket file.
-            */
 		    SizeOfMessage = read( ConnectionFileDescriptor , buffer, BUFFER_SIZE-1 );
 
 		    while( SizeOfMessage < 2 ) {
@@ -157,13 +155,13 @@ int main( int argc, char *argv[] ) {
 		        ThrowError( "ThrowError reading from socket" );
 
 		    // Here we are printing the message.
-		    cout << "Here is the message: " << buffer << '\n';
+		    cout << "Here are the coordinates: " << buffer << '\n';
 		    
 		    /*
 		        This returns a message to the socket file to be picked up by the client
 		        confirming the message was read.
 		    */
-		    string message = "I got your message.";
+		    string message = "Proper coordinates received.";
 		    SizeOfMessage = write( ConnectionFileDescriptor, message.c_str(), message.size() );
 		     
 		    // Obviously something went wrong here.
