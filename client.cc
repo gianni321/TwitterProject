@@ -146,19 +146,19 @@ int main( int argc, char *argv[] ) {
         string Message;
         stringstream in;
         do {
-        cout << "Please enter your coordinates: ";
+            cout << "Please enter your coordinates: ";
 
-        // setw here limits how many chars to take in from the User.
-        getline( cin >> setw(BUFFER_SIZE-1), Message );
+            // setw here limits how many chars to take in from the User.
+            getline( cin >> setw(BUFFER_SIZE-1), Message );
 
-        if( Message == "exit" )
-            break;
+            if( Message == "exit" )
+                break;
 
-        // Parsing ****
-        in.str(Message);
-        double longtitude, latitude;
-        char lo, lat;
-        int test;
+            // Parsing ****
+            in.str(Message);
+            double longtitude, latitude;
+            char lo, lat;
+            int test;
 
 
             in >> longtitude;
@@ -170,7 +170,13 @@ int main( int argc, char *argv[] ) {
             if( latitude - test == 0  ) in.setstate(in.failbit);
             in >> lat;
             if( lat != 'E' && lat != 'W' ) in.setstate(in.failbit);
-
+            // ****
+            
+            in.str("");
+            // Moving the decimal over two spots because we are hackers.
+            in << longtitude * 100 << " " << lo << " " << latitude * 100 << " " << lat;
+            Message = in.str();
+            
         } while(!in && cout << "Incorrect Usage: " << Message << '\n' 
                             << "Proper Usage: [Longtitude] [N/S] [Latitutude] [E/W]\n");
 
