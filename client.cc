@@ -13,6 +13,8 @@
 #include <iomanip>
 
 #define BUFFER_SIZE 256
+#define HOSTNAME "tweetpro.ddns.net"
+#define PORTNUMBER "34546"
 
 using namespace std;
 
@@ -40,10 +42,10 @@ int main( int argc, char *argv[] ) {
     char buffer[ BUFFER_SIZE ];
 
     // Error Checking
-    if ( argc != 3 ) {
-        cerr << "Usage: " << argv[0] << " [hostname] [port]\n"; 
-        exit( 0 );
-    }
+    // if ( argc != 3 ) {
+    //     cerr << "Usage: " << argv[0] << " [hostname] [port]\n"; 
+    //     exit( 0 );
+    // }
 
 
     /*
@@ -94,7 +96,7 @@ int main( int argc, char *argv[] ) {
         to find the information about the hostname that we supplied to the 
         function.
     */
-    Server = gethostbyname( argv[1] );
+    Server = gethostbyname( HOSTNAME );
 
     // Error Checking
     if ( Server == NULL ) {
@@ -105,21 +107,22 @@ int main( int argc, char *argv[] ) {
     // This zeroes out the ServerAddress struct for us.
     bzero( (char *) &ServerAddress, sizeof( ServerAddress ) );
 
-
+    // Describes our ServerAddress as an Internet Address.
     ServerAddress.sin_family = AF_INET;
 
     bcopy((char *)Server->h_addr, (char *)&ServerAddress.sin_addr.s_addr, Server->h_length);
 
     // This is the Port Number passed to the program
     // ***** This will change to use a rotating number of ports *****
-    int PortNumber = atoi(argv[2]);
+    int PortNumber = atoi( PORTNUMBER );
 
     /* 
         Here we assign the ServerAddress with the port number passed to the program
             htons() is used to change the port number from "host bye order"
             AKA normal decimal numbers. It changes it to "network byte order".
     */ 
-    ServerAddress.sin_port = htons( PortNumber );
+    do {
+        ServerAddress.sin_port = htons( PortNumber );
 
     /*
         This function is called by the client to establish a connection to the server.
@@ -132,17 +135,44 @@ int main( int argc, char *argv[] ) {
             The size of the address.
 
     */
-    if ( connect( SocketFileDescriptor, (struct sockaddr *) &ServerAddress, sizeof( ServerAddress ) ) < 0 ) 
-        ThrowError( "ERROR connecting" );
+        // Check the next port
+        ++PortNumber;
+    } while ( (PortNumber < atoi(PORTNUMBER) + 10) && connect( SocketFileDescriptor, (struct sockaddr *) &ServerAddress, sizeof( ServerAddress ) ) < 0 );
 
     while ( true ) {
         signal( SIGINT, SignalHandler );
+
         // Creates a Message string to be sent after prompt to User.
         string Message;
-        cout << "Please enter your message: ";
+        stringstream in;
+        do {
+        cout << "Please enter your coordinates: ";
 
         // setw here limits how many chars to take in from the User.
         getline( cin >> setw(BUFFER_SIZE-1), Message );
+
+        if( Message == "exit" )
+            break;
+
+        // Parsing ****
+        in.str(Message);
+        double longtitude, latitude;
+        char lo, lat;
+        int test;
+
+
+            in >> longtitude;
+            test = longtitude;
+            if( longtitude - test == 0 ) in.setstate(in.failbit);
+            in >> lo;
+            if( lo != 'N' && lo != 'S' ) in.setstate(in.failbit);
+            in >> latitude;
+            if( latitude - test == 0  ) in.setstate(in.failbit);
+            in >> lat;
+            if( lat != 'E' && lat != 'W' ) in.setstate(in.failbit);
+
+        } while(!in && cout << "Incorrect Usage: " << Message << '\n' 
+                            << "Proper Usage: [Longtitude] [N/S] [Latitutude] [E/W]\n");
 
         // Here we write our message to our socket.    
         int SizeOfMessage = write( SocketFileDescriptor, Message.c_str(), Message.size() );
