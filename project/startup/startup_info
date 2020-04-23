@@ -1,0 +1,8 @@
+
+
+
+Use "crontab -e" 
+
+you have to move the file after you run the script.
+for some reason gpspipe wont put it anywhere else but the 
+home directory.
