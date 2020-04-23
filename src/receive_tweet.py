@@ -1,81 +1,45 @@
-# GRV Work in progress
-
-import time
-from config import create_api
-import logging
 import tweepy
-import os
-import tweepy as tw
-import pandas as pd
-
-consumer_key = 'yourkeyhere'
-consumer_secret = 'yourkeyhere'
-access_token = 'yourkeyhere'
-access_token_secret = 'yourkeyhere'
-
-auth = tw.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-api = tw.API(auth, wait_on_rate_limit=True)
+import sys
+import datetime
+import json
+import urllib
 
 
-search_words = "#wildfires"
-date_since = "2018-11-16"
+# Twitter Tokens
+twitter_auth_keys = {
+    "consumer_key": "8r3djrKFhQKLFn7pi53VLOAtd",
+    "consumer_secret": "m8xIrhQtX6lfSagxbnOQMrNjpVWUCkhX7ccHo7TYOtdV2fBDW6",
+    "access_token": "1231271703709286400-cLDovtBPZwJfoHpCptgWqMzHte6d27",
+    "access_token_secret": "mTeSKmvavmBFxPX3Drvi7EqAbEpC6BNqZAgjtwHreBVTE"
+}
+# Loading in consumer tokens
+auth = tweepy.OAuthHandler(
+    twitter_auth_keys['consumer_key'],
+    twitter_auth_keys['consumer_secret']
+)
+# Loading in access tokens
+auth.set_access_token(
+    twitter_auth_keys['access_token'],
+    twitter_auth_keys['access_token_secret']
+)
+api = tweepy.API(auth)
 
+# timeline = tweepy.Cursor(api.mentions_timeline).items()
+# print(timeline)
 
-# Collect tweets
-tweets = tw.Cursor(api.search,
-                   q=search_words,
-                   lang="en",
-                   since=date_since).items(5)
-[tweet.text for tweet in tweets]
+# idk = ""
+# for mentions in tweepy.Cursor(api.mentions_timeline).items():
+#     # f.write(str(mentions))
+#     idk = json.loads(str(mentions))
 
+# print(idk)
 
-# get the last 20 entries in your timeline.
-timeline = api.home_timeline()
-for tweet in timeline:
-    print(f"{tweet.user.name} said {tweet.text}")
+# f.close()
 
-tweets_listener = MyStreamListener(api)
-stream = tweepy.Stream(api.auth, tweets_listener)
-stream.filter(track=["Python", "Django", "Tweepy"], languages=["en"])
+twt = api.search(q="#weather", since_id=360000000)
 
-
-# tweepy-bots/bots/autoreply.py
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
-
-
-def check_mentions(api, keywords, since_id):
-    logger.info("Retrieving mentions")
-    new_since_id = since_id
-    for tweet in tweepy.Cursor(api.mentions_timeline,
-                               since_id=since_id).items():
-        new_since_id = max(tweet.id, new_since_id)
-        if tweet.in_reply_to_status_id is not None:
-            continue
-        if any(keyword in tweet.text.lower() for keyword in keywords):
-            logger.info(f"Answering to {tweet.user.name}")
-
-            if not tweet.user.following:
-                tweet.user.follow()
-
-            api.update_status(
-                status="Please reach us via DM",
-                in_reply_to_status_id=tweet.id,
-            )
-    return new_since_id
-
-
-def main():
-    api = create_api()
-    since_id = 1
-    while True:
-        since_id = check_mentions(api, ["help", "support"], since_id)
-        logger.info("Waiting...")
-        time.sleep(60)
-
-
-if __name__ == "__main__":
-    main()
+for s in twt:
+    sn = s.user.screen_name
+    m = "HI", (sn)
+    s = api.update_status(m, s.id)
+    # ('HI', 'GriffinWeather')
