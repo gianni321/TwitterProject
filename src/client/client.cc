@@ -18,6 +18,8 @@
 
 using namespace std;
 
+
+// wasssuppppp
 void ThrowError( string message ) {
     cerr << message << '\n';
     exit( 0 );
