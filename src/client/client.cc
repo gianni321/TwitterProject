@@ -18,6 +18,7 @@
 
 using namespace std;
 
+
 void ThrowError( string message ) {
     cerr << message << '\n';
     exit( 0 );
@@ -146,19 +147,19 @@ int main( int argc, char *argv[] ) {
         string Message;
         stringstream in;
         do {
-        cout << "Please enter your coordinates: ";
+            cout << "Please enter your coordinates: ";
 
-        // setw here limits how many chars to take in from the User.
-        getline( cin >> setw(BUFFER_SIZE-1), Message );
+            // setw here limits how many chars to take in from the User.
+            getline( cin >> setw(BUFFER_SIZE-1), Message );
 
-        if( Message == "exit" )
-            break;
+            if( Message == "exit" )
+                break;
 
-        // Parsing ****
-        in.str(Message);
-        double longtitude, latitude;
-        char lo, lat;
-        int test;
+            // Parsing ****
+            in.str(Message);
+            double longtitude, latitude;
+            char lo, lat;
+            int test;
 
 
             in >> longtitude;
