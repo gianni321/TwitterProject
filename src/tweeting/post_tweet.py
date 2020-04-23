@@ -87,7 +87,7 @@ def post_tweet(tweet):
 
 if __name__ == "__main__":
     # Open grid file
-    with open("~/TwitterProject/resources/Coordinates.txt", 'r') as f:
+    with open("/home/pi/TwitterProject/src/tweeting/Coordinates.txt", 'r') as f:
         grid = f.readline().split(',')
 
     # Pull out a parsed message

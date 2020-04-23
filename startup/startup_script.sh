@@ -15,6 +15,6 @@ sudo /usr/local/bin/noip2 -i `hostname -I`
 # We may need to call gpsmon and ctrl+c to Start GPS daemon
 # pipe GPS daemon to our program
 
-sudo gpspipe -rln 50 | grep "GPGLL" > "Coordinates.txt"
+sudo gpspipe -rn 50 | grep "GPGLL" > "Coordinates.txt"
 
 echo "test"

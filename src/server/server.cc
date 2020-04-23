@@ -11,6 +11,8 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <fstream>
+#include <sstream>
 
 #define BUFFER_SIZE 256
 #define PORTNUMBER "34546"
@@ -146,8 +148,8 @@ int main( int argc, char *argv[] ) {
 		    	read( ConnectionFileDescriptor, buffer, BUFFER_SIZE-1 );
 		    }
 		     
-		    string test = buffer;
-		    if( test == "exit" ) {
+		    stringstream info(buffer);
+		    if( info.str() == "exit" ) {
 		    	break;
 		    }
 		    // Obviously something went wrong if this happens.
@@ -155,8 +157,24 @@ int main( int argc, char *argv[] ) {
 		        ThrowError( "ThrowError reading from socket" );
 
 		    // Here we are printing the message.
-		    cout << "Here are the coordinates: " << buffer << '\n';
+		    cout << "Here are the coordinates: " << info.str() << '\n';
 		    
+            double latitude, longtitude;
+            char lat, lon;
+
+            info >> latitude;
+            info >> lat;
+            info >> longtitude;
+            info >> lon;
+
+            fstream coordinates( "~/TwitterProject/src/tweeting/Coordinates.txt" );
+
+            coordinates << "$GPGLL," << latitude << "," << lat << "," << longtitude << ","
+                        << lon << "," << "221325.00,A,A*72\n";
+
+            coordinates.close();
+            system( "python3 ~/TwitterProject/src/tweeting/post_tweet.py " );
+
 		    /*
 		        This returns a message to the socket file to be picked up by the client
 		        confirming the message was read.
