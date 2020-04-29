@@ -17,5 +17,12 @@ sudo /usr/local/bin/noip2 -i `hostname -I`
 
 sudo gpspipe -rn 50 | grep "GPGLL" > "Coordinates.txt"
 
+mv Coordinates.txt ~/TwitterProject/resources/Coordinates.txt
+
+~/TwitterProject/bin/server
+
+~/TwitterProject/bin/gpstweet
+
+python3 ~/TwitterProject/src/tweeting/receive_tweet.py
 
 echo "test"
