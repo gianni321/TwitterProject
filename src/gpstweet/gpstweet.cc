@@ -10,17 +10,13 @@ int main() {
 
     // Variables.
     ifstream f( "/home/pi/TwitterProject/resources/Coordinates.txt" );
+
+    if( !f )
+        throw " file not open ";
     string coordinates;
     
     // Check file for coordinates
-    while( getline( f, coordinates ) ) {
-        if( coordinates.substr(0, 6) == "$GPGLL" )
-            break;
-    }
-
-    // Throw error for coordinates not found.
-    if( coordinates.substr(0, 6) != "$GPGLL" )
-        throw runtime_error( "No Coordinates Found.\n" );
+    getline( f, coordinates );
 
     // More variables.
     stringstream parsed( coordinates );
@@ -28,20 +24,30 @@ int main() {
     string lat, lon;
 
     getline( parsed, coordinates, ',' );
+    cout << coordinates << '\n';
 
     getline( parsed, coordinates, ',' );
     latitude = atof( coordinates.c_str() );
+    cout << "latitude: " << latitude << '\n';
 
-    lat = getline( parsed, coordinates, ',' );
+    getline( parsed, lat, ',' );
+    cout << "lat: " << lat << '\n';
 
-    getline( parsed, coordinates, ',' )
+    getline( parsed, coordinates, ',' );
     longtitude = atof( coordinates.c_str() );
+    cout << "longtitude: " << longtitude << '\n';
 
-    lon = getline( parsed, coordinates, ',' );
+    getline( parsed, lon, ',' );
+    cout << "lon: " << lon << '\n';
 
-    if( lat != "N" || lat != "S" || lon != "E" || lon != "W" )
+    if( lat != "N" && lat != "S" || lon != "E" && lon != "W" )
         throw runtime_error( "Invalid Direction: "s + coordinates );
 
-    cout << parsed;
+    stringstream coords;
+    coords << "python3 ~/TwitterProject/src/tweeting/post_tweet.py "
+                << "\"" << latitude << " " << lat << " " << longtitude << " " << lon << "\"";
+
+    // coordinates.close();
+    system( coords.str().c_str() );
 
 }
