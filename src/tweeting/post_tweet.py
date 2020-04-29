@@ -4,6 +4,7 @@ import datetime
 import json
 import urllib
 from urllib.request import urlopen
+import auth
 
 
 '''
@@ -43,8 +44,10 @@ def parse_weather(grid):
         # Get icon and detailed forecast
         image_url = text["properties"]["periods"][0]["icon"][:-6]+"large"
         weather_report = "Weather Conditions At: " + str(grid) + " \n"
-        weather_report += "Current Temperature: " + str(text["properties"]["periods"][0]["temperature"]) + " F\n"
-        weather_report += "Forecast: " + text["properties"]["periods"][0]["detailedForecast"]
+        weather_report += "Current Temperature: " + \
+            str(text["properties"]["periods"][0]["temperature"]) + " F\n"
+        weather_report += "Forecast: " + \
+            text["properties"]["periods"][0]["detailedForecast"]
 
         # Write weather image
         with urlopen(image_url) as response:
@@ -60,24 +63,7 @@ def parse_weather(grid):
 
 def post_tweet(tweet, id):
     # Twitter Tokens
-    twitter_auth_keys = {
-        "consumer_key": "8r3djrKFhQKLFn7pi53VLOAtd",
-        "consumer_secret": "m8xIrhQtX6lfSagxbnOQMrNjpVWUCkhX7ccHo7TYOtdV2fBDW6",
-        "access_token": "1231271703709286400-cLDovtBPZwJfoHpCptgWqMzHte6d27",
-        "access_token_secret": "mTeSKmvavmBFxPX3Drvi7EqAbEpC6BNqZAgjtwHreBVTE"
-    }
-    # Loading in consumer tokens
-    auth = tweepy.OAuthHandler(
-        twitter_auth_keys['consumer_key'],
-        twitter_auth_keys['consumer_secret']
-    )
-    # Loading in access tokens
-    auth.set_access_token(
-        twitter_auth_keys['access_token'],
-        twitter_auth_keys['access_token_secret']
-    )
-    # Verify auth
-    api = tweepy.API(auth)
+    api = auth.getAuth()
 
     # Seting "@var tweet" to be posted as status.
 
