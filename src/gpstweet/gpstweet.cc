@@ -27,14 +27,14 @@ int main() {
     cout << coordinates << '\n';
 
     getline( parsed, coordinates, ',' );
-    latitude = atof( coordinates.c_str() );
+    latitude = atof( coordinates.c_str() ) / 100;
     cout << "latitude: " << latitude << '\n';
 
     getline( parsed, lat, ',' );
     cout << "lat: " << lat << '\n';
 
     getline( parsed, coordinates, ',' );
-    longtitude = atof( coordinates.c_str() );
+    longtitude = atof( coordinates.c_str() ) / 100;
     cout << "longtitude: " << longtitude << '\n';
 
     getline( parsed, lon, ',' );
@@ -48,6 +48,7 @@ int main() {
                 << "\"" << latitude << " " << lat << " " << longtitude << " " << lon << "\"";
 
     // coordinates.close();
+    cout << coords.str() << '\n';
     system( coords.str().c_str() );
 
 }
