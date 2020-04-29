@@ -1,9 +1,9 @@
 import tweepy
+import time
 import sys
 import datetime
 import json
 import urllib
-
 
 # Twitter Tokens
 twitter_auth_keys = {
@@ -24,22 +24,32 @@ auth.set_access_token(
 )
 api = tweepy.API(auth)
 
-# timeline = tweepy.Cursor(api.mentions_timeline).items()
-# print(timeline)
+mentions_file = "mentions.txt"
 
-# idk = ""
-# for mentions in tweepy.Cursor(api.mentions_timeline).items():
-#     # f.write(str(mentions))
-#     idk = json.loads(str(mentions))
+def retrieve_last_seen_id(file_name):
+    f_read = open(file_name, 'r')
+    last_seen_id = int(f_read.read().strip())
+    f_read.close
+    return last_seen_id
 
-# print(idk)
+def store_last_seen_id(last_seen_id, file_name):
+    f_write = open(file_name, 'w')
+    f_write.write(str(last_seen_id))
+    f_write.close()
+    return
 
-# f.close()
+def retrieve_mentions():
+    print("Im trying...")
+    last_seen_id = retrieve_last_seen_id(mentions_file)
+    mentions = api.mentions_timeline(last_seen_id, tweet_mode = "extended")
+    for mention in reversed(mentions):
+        if not mention:
+            return
+        print(str(mention.id) + '-' + mention.full_text, flush=True)
+        print(mention.full_text[16:])
+        last_mention = mention.id
+        store_last_seen_id(last_mention, mentions_file)
 
-twt = api.search(q="#weather", since_id=360000000)
-
-for s in twt:
-    sn = s.user.screen_name
-    m = "HI", (sn)
-    s = api.update_status(m, s.id)
-    # ('HI', 'GriffinWeather')
+while True:
+    retrieve_mentions()
+    time.sleep(10)
