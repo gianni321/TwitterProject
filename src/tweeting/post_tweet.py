@@ -43,11 +43,16 @@ def parse_weather(grid):
 
         # Get icon and detailed forecast
         image_url = text["properties"]["periods"][0]["icon"][:-6]+"large"
-        weather_report = "Cords: " + str(grid) + " \n"
-        weather_report += "Temp: " + \
+        weather_report = "Coordinates: " + str(grid) + " \n"
+        weather_report += "Temperature: " + \
             str(text["properties"]["periods"][0]["temperature"]) + " F\n"
-        weather_report += "Forecast: " + \
+        test = "Forecast: " + \
+            text["properties"]["periods"][0]["detailedForecast"]
+        if len(weather_report) + len(test) > 280 :
+            weather_report += "Forecast: " + \
             text["properties"]["periods"][0]["shortForecast"]
+        else :
+            weather_report += test
 
         # Write weather image
         with urlopen(image_url) as response:
