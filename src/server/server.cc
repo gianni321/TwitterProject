@@ -167,16 +167,17 @@ int main( int argc, char *argv[] ) {
             info >> longtitude;
             info >> lon;
 
-            fstream coordinates( "/home/pi/TwitterProject/resources/Coordinates.txt" );
+            // fstream coordinates( "/home/pi/TwitterProject/resources/Coordinates.txt" );
 
-            if( !coordinates )
-                cout << "Failed\n";
+            // if( !coordinates )
+                // cout << "Failed\n";
 
-            coordinates << "$GPGLL," << latitude << "," << lat << "," << longtitude << ","
-                        << lon << "," << "221325.00,A,A*72\n";
+            stringstream coordinates;
+            coordinates << "python3 ~/TwitterProject/src/tweeting/post_tweet.py "
+                        << "\"" << latitude << " " << lat << " " << longtitude << " " << lon << "\"";
 
-            coordinates.close();
-            system( "python3 ~/TwitterProject/src/tweeting/post_tweet.py " );
+            // coordinates.close();
+            system( coordinates.str().c_str() );
 
 		    /*
 		        This returns a message to the socket file to be picked up by the client

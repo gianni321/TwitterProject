@@ -17,4 +17,5 @@ sudo /usr/local/bin/noip2 -i `hostname -I`
 
 sudo gpspipe -rn 50 | grep "GPGLL" > "Coordinates.txt"
 
+
 echo "test"
