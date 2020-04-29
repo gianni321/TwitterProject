@@ -71,10 +71,11 @@ def post_tweet(tweet, id):
     media = api.media_upload("weather_image.png")
 
     # Sending
-    if(id == 0):
-        status = api.update_status(status=tweet, media_ids=[media.media_id])
-    else:
-        status = api.update_status(status=tweet, media_ids=[media.media_id], in_reply_to_status_id = id)
+    # if(id == 0):
+    status = api.update_status(status=tweet, media_ids=[media.media_id])
+    # else:
+    #     status = api.update_status(status=tweet, media_ids=[
+    #                                media.media_id], in_reply_to_status_id=id)
 
 
 if __name__ == "__main__":
