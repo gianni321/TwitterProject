@@ -49,7 +49,7 @@ def post_tweet_call(text, id):
     print("text: ", text)
     print("id: ", id)
 
-    os.system("python3 post_tweet.py {} {}".format(text, id))
+    os.system("python3 post_tweet.py \"{}\" \"{}\"".format(text, id))
 
 
 while True:
