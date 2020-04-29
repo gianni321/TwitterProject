@@ -4,6 +4,7 @@ import datetime
 import json
 import urllib
 from urllib.request import urlopen
+import auth
 
 
 '''
@@ -22,18 +23,20 @@ def parse_weather(grid):
     # string that will contain current weather information
     weather_report = "No current weather information at this location."
 
-    # Move decimal place over and add negative sign if needed
-    latitude = str(float(grid[1])/100)
-    if(grid[2] == 'S'):
+    grid = grid.split(' ')
+    latitude = grid[0]
+    longitude = grid[2]
+
+    if(grid[1] == 'S'):
         latitude = "-" + latitude
 
     # Move decimal place over and add negative sign if needed
-    longitude = str(float(grid[3])/100)
-    if(grid[4] == 'W'):
+    if(grid[3] == 'W'):
         longitude = "-" + longitude
 
     # Combine into one grid string and call api
     grid = latitude + ',' + longitude
+
     with urlopen(f"https://api.weather.gov/points/{grid}/forecast") as response:
         text = response.read()
         text = json.loads(text)
@@ -41,8 +44,10 @@ def parse_weather(grid):
         # Get icon and detailed forecast
         image_url = text["properties"]["periods"][0]["icon"][:-6]+"large"
         weather_report = "Weather Conditions At: " + str(grid) + " \n"
-        weather_report += "Current Temperature: " + str(text["properties"]["periods"][0]["temperature"]) + " F\n"
-        weather_report += "Forecast: " + text["properties"]["periods"][0]["detailedForecast"]
+        weather_report += "Current Temperature: " + \
+            str(text["properties"]["periods"][0]["temperature"]) + " F\n"
+        weather_report += "Forecast: " + \
+            text["properties"]["periods"][0]["detailedForecast"]
 
         # Write weather image
         with urlopen(image_url) as response:
@@ -56,26 +61,9 @@ def parse_weather(grid):
     return weather_report
 
 
-def post_tweet(tweet):
+def post_tweet(tweet, id):
     # Twitter Tokens
-    twitter_auth_keys = {
-        "consumer_key": "8r3djrKFhQKLFn7pi53VLOAtd",
-        "consumer_secret": "m8xIrhQtX6lfSagxbnOQMrNjpVWUCkhX7ccHo7TYOtdV2fBDW6",
-        "access_token": "1231271703709286400-cLDovtBPZwJfoHpCptgWqMzHte6d27",
-        "access_token_secret": "mTeSKmvavmBFxPX3Drvi7EqAbEpC6BNqZAgjtwHreBVTE"
-    }
-    # Loading in consumer tokens
-    auth = tweepy.OAuthHandler(
-        twitter_auth_keys['consumer_key'],
-        twitter_auth_keys['consumer_secret']
-    )
-    # Loading in access tokens
-    auth.set_access_token(
-        twitter_auth_keys['access_token'],
-        twitter_auth_keys['access_token_secret']
-    )
-    # Verify auth
-    api = tweepy.API(auth)
+    api = auth.getAuth()
 
     # Seting "@var tweet" to be posted as status.
 
@@ -83,13 +71,18 @@ def post_tweet(tweet):
     media = api.media_upload("weather_image.png")
 
     # Sending
-    status = api.update_status(status=tweet, media_ids=[media.media_id])
+    if(id == 0):
+        status = api.update_status(status=tweet, media_ids=[media.media_id])
+    else:
+        status = api.update_status(status=tweet, media_ids=[media.media_id], in_reply_to_status_id = id)
 
 
 if __name__ == "__main__":
     # Open grid file
-    with open("/home/pi/TwitterProject/resources/Coordinates.txt", 'r') as f:
-        grid = f.readline().split(',')
+    grid = str(sys.argv[1])
+    id = 0
+    if (len(sys.argv) > 2):
+        id = sys.argv[2]
 
     # Pull out a parsed message
     contents = parse_weather(grid)
@@ -103,4 +96,4 @@ if __name__ == "__main__":
           str(now) + "\n" + contents)
     # Load into our post tweet with date
     tweet = str(now) + "\n" + contents
-    post_tweet(tweet)
+    post_tweet(tweet, id)
