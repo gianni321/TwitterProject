@@ -167,7 +167,10 @@ int main( int argc, char *argv[] ) {
             info >> longtitude;
             info >> lon;
 
-            fstream coordinates( "~/TwitterProject/src/tweeting/Coordinates.txt" );
+            fstream coordinates( "/home/pi/TwitterProject/resources/Coordinates.txt" );
+
+            if( !coordinates )
+                cout << "Failed\n";
 
             coordinates << "$GPGLL," << latitude << "," << lat << "," << longtitude << ","
                         << lon << "," << "221325.00,A,A*72\n";
