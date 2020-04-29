@@ -42,14 +42,14 @@ def retrieve_mentions():
         # print(mention.full_text[16:])
         last_mention = mention.id
         store_last_seen_id(last_mention, mentions_file)
-        post_tweet_call(mention.full_text[16:], mention.id)
+        post_tweet_call(mention.full_text[16:].strip(), mention.id)
 
 
 def post_tweet_call(text, id):
     print("text: ", text)
     print("id: ", id)
 
-    os.system("python3 post_tweet.py {} {}".format(text, id))
+    os.system("python3 post_tweet.py \"{}\" \"{}\"".format(text, id))
 
 
 while True:
