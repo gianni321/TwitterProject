@@ -1,3 +1,11 @@
+/*
+    This code is based off this tutorial in C. It has been adapted to C++ and some major changes have been made to facilitate
+    our program such as running the send and receiving of messages in a loop to keep the interaction with our server running.
+    
+    Tutorial was created by Rensellauer Polytechnical Institute
+    link to tutorial: https://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+*/
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
