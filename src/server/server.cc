@@ -1,5 +1,12 @@
-/* A simple server in the internet domain using TCP
-   The port number is passed as an argument */
+/*
+    This code is based off this tutorial in C. It has been adapted to C++ and some major changes have been made to facilitate
+    our program such as running the send and receiving of messages in a loop to keep the interaction with our clients running
+    as well as continuing to listen for subsequent clients.
+    
+    Tutorial was created by Rensellauer Polytechnical Institute
+    link to tutorial: https://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+*/
+
 #include <stdio.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
