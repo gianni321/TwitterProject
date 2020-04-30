@@ -19,10 +19,17 @@ sudo gpspipe -rn 50 | grep "GPGLL" > "Coordinates.txt"
 
 mv Coordinates.txt ~/TwitterProject/resources/Coordinates.txt
 
-~/TwitterProject/bin/server
+sleep 10
 
 ~/TwitterProject/bin/gpstweet
 
-python3 ~/TwitterProject/src/tweeting/receive_tweet.py
+sleep 1
+
+~/TwitterProject/src/tweeting/receive_tweet.py
+
+~/TwitterProject/bin/server
+
+
+
 
 echo "test"
