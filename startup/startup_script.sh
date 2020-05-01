@@ -30,6 +30,4 @@ sleep 1
 ~/TwitterProject/bin/server
 
 
-
-
 echo "test"
