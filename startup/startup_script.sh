@@ -30,6 +30,4 @@ sleep 1
 ~/TwitterProject/bin/server > ~/server.txt 2>&1 &
 
 
-
-
 echo "test"
