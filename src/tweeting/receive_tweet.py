@@ -10,11 +10,7 @@ import auth
 import os
 
 
-# # Twitter Tokens
-api = auth.getAuth()
-
-
-mentions_file = "mentions.txt"
+mentions_file = "/home/pi/TwitterProject/src/tweeting/mentions.txt"
 
 
 def retrieve_last_seen_id(file_name):
@@ -32,14 +28,14 @@ def store_last_seen_id(last_seen_id, file_name):
 
 
 def retrieve_mentions():
-    print("Searching for tweets...")
+    print("Searching for tweets...", flush=True)
     last_seen_id = retrieve_last_seen_id(mentions_file)
     mentions = api.mentions_timeline(last_seen_id, tweet_mode="extended")
     for mention in reversed(mentions):
         # mention.text
         if not mention:
             return
-        print("New tweet found, replying...")
+        print("New tweet found, replying...", flush=True)
         # print(str(mention.id) + '-' + mention.full_text, flush=True)
         # print(mention.full_text[16:])
         last_mention = mention.id
@@ -51,9 +47,12 @@ def post_tweet_call(text, id):
     print("text: ", text)
     print("id: ", id)
 
-    os.system("python3 post_tweet.py \"{}\" \"{}\"".format(text, id))
+    os.system("python3 /home/pi/TwitterProject/src/tweeting/post_tweet.py \"{}\" \"{}\"".format(text, id))
 
 
 while True:
-    retrieve_mentions()
-    time.sleep(10)
+    # # Twitter Tokens
+    api = auth.getAuth()
+    while True:
+        retrieve_mentions()
+        time.sleep(10)

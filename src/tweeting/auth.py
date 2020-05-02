@@ -2,6 +2,7 @@ import tweepy
 
 
 def getAuth():
+    print("Authorizing...", flush=True)
     twitter_auth_keys = {
         "consumer_key": "8r3djrKFhQKLFn7pi53VLOAtd",
         "consumer_secret": "m8xIrhQtX6lfSagxbnOQMrNjpVWUCkhX7ccHo7TYOtdV2fBDW6",
